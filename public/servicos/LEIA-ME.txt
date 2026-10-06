@@ -1,0 +1,6 @@
+Coloque aqui as fotos dos serviços (JPG ou PNG, de preferência com largura de até 800 px).
+
+Depois, no painel (/admin > Serviços > lápis de editar), no campo "Foto", escreva o caminho do arquivo.
+Exemplo: se o arquivo for public/servicos/corte.jpg, escreva:  /servicos/corte.jpg
+
+Use apenas fotos suas ou que você tenha autorização para usar. Serviços sem foto mostram um ícone de tesoura.
