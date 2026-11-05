@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, CalendarDays, ChevronRight } from "lucide-react";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,12 @@ export function DateTimePicker({ serviceIds, token, date, time, onChange, versio
   );
 
   const openDays = (availability.data ?? []).filter((d) => d.open);
+
+  // já deixa o primeiro dia com horário livre marcado: a pessoa só precisa tocar no horário
+  useEffect(() => {
+    if (!openDays.length || openDays.some((d) => d.date === date)) return;
+    onChange((openDays.find((d) => d.slots.length) ?? openDays[0]!).date, "");
+  }, [availability.data, date]); // eslint-disable-line react-hooks/exhaustive-deps
   const slots = openDays.find((d) => d.date === date)?.slots ?? [];
   const visible = openDays.slice(page * DAYS_PER_PAGE, page * DAYS_PER_PAGE + DAYS_PER_PAGE);
 

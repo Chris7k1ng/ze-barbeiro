@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -27,7 +27,7 @@ import { defaultServicePhoto, servicePhoto } from "@/lib/service-photos";
 import { mapsUrl, shopInfo, whatsappUrl } from "@/lib/shop-info";
 import { dayLabel, money, type MyBooking, type Service, type Settings } from "@/lib/shop";
 
-const steps = ["Serviço", "Dia e horário", "Seus dados", "Confirmação"];
+const steps = ["Serviço", "Dia e horário", "Seus dados"];
 const weekdayNames = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 
 /** "segunda a sábado", "terça, quinta e sábado"... */
@@ -105,6 +105,16 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
   const chosenNames = chosen.map((s) => s.name).join(" + ");
   const totalPrice = chosen.reduce((sum, s) => sum + s.price, 0);
   const totalDuration = chosen.reduce((sum, s) => sum + s.duration, 0);
+
+  // ao mudar de passo, leva a pessoa para o começo do novo passo (não fica perdida no meio da página)
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    document.getElementById("agendamento")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [step]);
 
   const toggleService = (id: string) => {
     setServiceIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
@@ -359,20 +369,20 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
 
         <div className="booking-layout">
           <section id="servicos" className="min-w-0">
-            <p className="eyebrow">Passo {String(step + 1).padStart(2, "0")} de 04</p>
+            <p className="eyebrow">Passo {step + 1} de 3</p>
             <h2 className="section-title mt-2">
               {step === 0
-                ? "O que vamos fazer hoje?"
+                ? "Escolha o serviço"
                 : step === 1
-                  ? "Quando vamos te receber?"
-                  : "Vamos nos conhecer?"}
+                  ? "Escolha o dia e a hora"
+                  : "Seu nome e WhatsApp"}
             </h2>
             <p className="text-muted-foreground text-xs mt-2">
               {step === 0
-                ? "Escolha um ou mais serviços. Ex.: corte e sobrancelha no mesmo horário."
+                ? "Pode marcar mais de um (ex.: corte e sobrancelha). Sem precisar de cadastro."
                 : step === 1
-                  ? "Escolha o melhor dia e um horário disponível."
-                  : "Só precisamos do seu nome e WhatsApp."}
+                  ? "Toque no dia e depois no horário."
+                  : "Só precisamos disso para confirmar o seu horário."}
             </p>
 
             {step === 0 && (
@@ -476,34 +486,60 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
                 {error}
               </p>
             )}
-            <div className="flex flex-wrap justify-between items-center mt-7 gap-3">
-              {step > 0 ? (
+            {/* Barra fixa: o total e o botão de continuar ficam sempre à vista */}
+            <div className="action-bar">
+              <div className="min-w-0 text-xs">
+                {chosen.length ? (
+                  <>
+                    <p className="truncate text-muted-foreground">
+                      {chosenNames}
+                      {date && time
+                        ? ` · ${dayLabel(date, { day: "numeric", month: "short" })} às ${time}`
+                        : ""}
+                    </p>
+                    <p>
+                      <strong className="text-primary text-base">{money(totalPrice)}</strong>
+                      <span className="text-muted-foreground"> · {totalDuration} min</span>
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">Escolha um serviço para continuar</p>
+                )}
+                {chosen.length > 0 && step === 1 && !time && (
+                  <p className="text-muted-foreground">Falta escolher o horário</p>
+                )}
+              </div>
+              <div className="flex gap-2 sm:ml-auto">
+                {step > 0 && (
+                  <Button
+                    variant="ghost"
+                    className="h-11"
+                    onClick={() => {
+                      setStep(step - 1);
+                      setError("");
+                    }}
+                  >
+                    <ArrowLeft />
+                    Voltar
+                  </Button>
+                )}
                 <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setStep(step - 1);
-                    setError("");
-                  }}
+                  className="h-11 flex-1 px-4 sm:flex-none sm:px-6"
+                  disabled={
+                    saving || (step === 0 ? !chosen.length : step === 1 ? !date || !time : false)
+                  }
+                  onClick={() => (step === 2 ? finish() : setStep(step + 1))}
                 >
-                  <ArrowLeft />
-                  Voltar
+                  {step === 0
+                    ? "Continuar para o horário"
+                    : step === 1
+                      ? "Continuar para meus dados"
+                      : saving
+                        ? "Salvando…"
+                        : "Confirmar agendamento"}
+                  <ArrowRight />
                 </Button>
-              ) : (
-                <span className="text-[10px] text-muted-foreground flex gap-2 items-center">
-                  <ShieldCheck className="size-3" />
-                  Sem precisar de cadastro
-                </span>
-              )}
-              <Button
-                className="h-11 px-4 sm:px-6 ml-auto"
-                disabled={
-                  saving || (step === 0 ? !chosen.length : step === 1 ? !date || !time : false)
-                }
-                onClick={() => (step === 2 ? finish() : setStep(step + 1))}
-              >
-                {step === 2 ? (saving ? "Salvando…" : "Confirmar agendamento") : "Continuar"}
-                <ArrowRight />
-              </Button>
+              </div>
             </div>
           </section>
 
