@@ -64,7 +64,7 @@ export function BrandHeader() {
 export function BrandFooter() {
   const maps = mapsUrl();
   const insta = instagramUrl();
-  const wa = whatsappUrl("Olá! Gostaria de falar com o Zé Filho Barbeiro.");
+  const wa = whatsappUrl("Olá, Zé Filho! Vim pelo site e gostaria de mais informações.");
   return (
     <footer id="contato" className="page-footer">
       <div className="shell">

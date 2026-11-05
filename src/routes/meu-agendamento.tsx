@@ -44,7 +44,7 @@ function MyBookings() {
     }
   };
 
-  const help = whatsappUrl("Olá! Preciso remarcar ou cancelar meu horário.");
+  const help = whatsappUrl("Olá, Zé Filho! Preciso remarcar ou cancelar meu horário. Pode me ajudar?");
 
   return (
     <>

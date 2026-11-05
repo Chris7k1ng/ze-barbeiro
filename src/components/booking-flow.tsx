@@ -154,7 +154,16 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
       description: `Agendamento de ${done.name}. Para cancelar ou remarcar: ${location.origin}/agendamento/${done.token}`,
     };
     const wa = whatsappUrl(
-      `Olá! Acabei de agendar ${done.serviceName} para ${day} às ${done.time}. Meu nome é ${done.name}.`,
+      [
+        "Olá, Zé Filho! Acabei de agendar pelo site. 😊",
+        "",
+        `✂️ Serviço: ${done.serviceName}`,
+        `📅 Dia: ${day}`,
+        `🕐 Horário: ${done.time}`,
+        `👤 Nome: ${done.name}`,
+        "",
+        "Qualquer mudança eu te aviso. Obrigado!",
+      ].join("\n"),
     );
     return (
       <>
@@ -451,7 +460,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
                 {error}
               </p>
             )}
-            <div className="flex justify-between items-center mt-7 gap-3">
+            <div className="flex flex-wrap justify-between items-center mt-7 gap-3">
               {step > 0 ? (
                 <Button
                   variant="ghost"
@@ -470,7 +479,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
                 </span>
               )}
               <Button
-                className="h-11 px-6"
+                className="h-11 px-4 sm:px-6 ml-auto"
                 disabled={saving || (step === 0 ? !service : step === 1 ? !date || !time : false)}
                 onClick={() => (step === 2 ? finish() : setStep(step + 1))}
               >

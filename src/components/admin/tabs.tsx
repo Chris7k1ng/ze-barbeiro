@@ -318,7 +318,17 @@ export function RemindersTab({ version }: { version: number }) {
         <Problem message={bookings.error} retry={bookings.reload} />
       )}
       {list.map((b) => {
-        const text = `Olá, ${b.name}! Passando para lembrar do seu horário amanhã, às ${b.time}, para ${b.serviceName}, no Zé Filho Barbeiro. Para cancelar ou remarcar: ${location.origin}/agendamento/${b.token}`;
+        const text = [
+          `Olá, ${b.name.split(" ")[0]}! Tudo bem? 😊`,
+          "",
+          `Passando para lembrar do seu horário amanhã no Zé Filho Barbeiro:`,
+          `✂️ ${b.serviceName}`,
+          `🕐 ${b.time}`,
+          "",
+          `Se precisar remarcar ou cancelar, é só acessar: ${location.origin}/agendamento/${b.token}`,
+          "",
+          "Te esperamos!",
+        ].join("\n");
         return (
           <div key={b.id} className="agenda-row">
             <strong className="font-display text-2xl text-primary">{b.time}</strong>
