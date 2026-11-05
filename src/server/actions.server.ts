@@ -115,10 +115,26 @@ export function createActions(repo: Repo, clock: () => number = Date.now) {
 
   const overlapMessage = "Esse horário acabou de ser ocupado por outro agendamento. Escolha outro.";
 
+  /** Junta os serviços escolhidos (um ou vários) em um só atendimento: nome, preço e duração somados. */
+  async function chosenServices(data: {
+    serviceId?: string | undefined;
+    serviceIds?: string[] | undefined;
+  }) {
+    const ids = [...new Set(data.serviceIds ?? [data.serviceId!])];
+    const found = await Promise.all(ids.map((id) => repo.getService(id)));
+    const list = found.filter((s): s is Service => !!s && s.active);
+    if (list.length !== ids.length) throw new UserError("Esse serviço não está disponível.");
+    return {
+      id: list.length === 1 ? list[0]!.id : null,
+      name: list.map((s) => s.name).join(" + "),
+      priceCents: list.reduce((sum, s) => sum + Math.round(s.price * 100), 0),
+      duration: list.reduce((sum, s) => sum + s.duration, 0),
+    };
+  }
+
   async function createBooking(input: unknown, byOwner: boolean) {
     const data = parse(bookingInputSchema, input);
-    const service = await repo.getService(data.serviceId);
-    if (!service || !service.active) throw new UserError("Esse serviço não está disponível.");
+    const service = await chosenServices(data);
 
     if (!byOwner) {
       const active = await repo.countActiveByPhone(data.phone, todayKey(clock()));
@@ -137,7 +153,7 @@ export function createActions(repo: Repo, clock: () => number = Date.now) {
       phone: data.phone,
       serviceId: service.id,
       serviceName: service.name,
-      priceCents: Math.round(service.price * 100),
+      priceCents: service.priceCents,
       duration: service.duration,
       date: data.date,
       time: data.time,
@@ -169,9 +185,7 @@ export function createActions(repo: Repo, clock: () => number = Date.now) {
           throw new UserError("Este agendamento não pode mais ser remarcado.");
         duration = booking.duration;
       } else {
-        const service = await repo.getService(data.serviceId!);
-        if (!service || !service.active) throw new UserError("Esse serviço não está disponível.");
-        duration = service.duration;
+        duration = (await chosenServices(data)).duration;
       }
       return slotsForDays(data.from, data.days, duration, data.token);
     },

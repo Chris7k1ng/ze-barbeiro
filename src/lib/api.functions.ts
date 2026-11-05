@@ -52,6 +52,7 @@ export const getAvailability = createServerFn({ method: "POST" })
   .validator(
     input<{
       serviceId?: string | undefined;
+      serviceIds?: string[] | undefined;
       token?: string | undefined;
       from: string;
       days: number;
@@ -62,7 +63,9 @@ export const getAvailability = createServerFn({ method: "POST" })
   );
 
 export const createBooking = createServerFn({ method: "POST" })
-  .validator(input<{ name: string; phone: string; serviceId: string; date: string; time: string }>)
+  .validator(
+    input<{ name: string; phone: string; serviceIds: string[]; date: string; time: string }>,
+  )
   .handler(({ data }): Promise<Result<MyBooking>> =>
     run(async () => (await actions()).createBooking(data)),
   );
@@ -175,7 +178,9 @@ export const ownerSetStatus = createServerFn({ method: "POST" })
   );
 
 export const ownerCreateBooking = createServerFn({ method: "POST" })
-  .validator(input<{ name: string; phone: string; serviceId: string; date: string; time: string }>)
+  .validator(
+    input<{ name: string; phone: string; serviceIds: string[]; date: string; time: string }>,
+  )
   .handler(({ data }): Promise<Result<Booking>> =>
     owner(async () => (await actions()).adminCreateBooking(data)),
   );

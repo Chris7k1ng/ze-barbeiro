@@ -394,3 +394,38 @@ describe("regras gravadas no próprio banco", () => {
     expect(notNull[0]?.is_nullable).toBe("NO");
   });
 });
+
+describe("vários serviços no mesmo horário", () => {
+  it("soma preço e duração e junta os nomes (corte + sobrancelha)", async () => {
+    const result = await api.createBooking({
+      name: "Cliente Dois",
+      phone: phone(40),
+      serviceIds: ["corte", "sobrancelha"],
+      date: "2099-10-08",
+      time: "09:00",
+    });
+    expect(result).toMatchObject({ serviceName: "Corte + Sobrancelha", price: 35, duration: 40 });
+    // 09:00 + 40 min: 09:30 já está ocupado, 09:45 está livre
+    const list = await slotsOf("corte", "2099-10-08");
+    expect(list).not.toContain("09:30");
+    expect(list).toContain("10:00");
+  });
+
+  it("os horários livres consideram a duração somada", async () => {
+    const [day] = await api.availability({
+      serviceIds: ["corte", "sobrancelha", "hidratacao"],
+      from: "2099-10-09",
+      days: 1,
+    });
+    // 30 + 10 + 30 = 70 min: um corte sozinho cabe às 11:30, os três juntos não
+    expect(await slotsOf("corte", "2099-10-09")).toContain("11:30");
+    expect(day!.slots).not.toContain("11:30");
+  });
+
+  it("recusa lista vazia e serviço que não existe", async () => {
+    await fails(book({ phone: phone(41), serviceId: undefined, serviceIds: [] }));
+    await fails(
+      book({ phone: phone(42), serviceId: undefined, serviceIds: ["corte", "nao-existe"] }),
+    );
+  });
+});

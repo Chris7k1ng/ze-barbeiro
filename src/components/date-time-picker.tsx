@@ -17,7 +17,7 @@ const keyOf = (d: Date) =>
 
 type Props = {
   /** novo agendamento: o serviço escolhido */
-  serviceId?: string;
+  serviceIds?: string[];
   /** remarcar: o link secreto do agendamento */
   token?: string;
   date: string;
@@ -28,11 +28,12 @@ type Props = {
 };
 
 /** Escolha do dia e do horário. Os horários livres vêm do servidor, sempre atualizados. */
-export function DateTimePicker({ serviceId, token, date, time, onChange, version = 0 }: Props) {
+export function DateTimePicker({ serviceIds, token, date, time, onChange, version = 0 }: Props) {
   const [page, setPage] = useState(0);
+  const serviceKey = serviceIds?.join(",");
   const availability = useLoad(
-    () => getAvailability({ data: { serviceId, token, from: todayKey(), days: DAYS_SHOWN } }),
-    [serviceId, token, version],
+    () => getAvailability({ data: { serviceIds, token, from: todayKey(), days: DAYS_SHOWN } }),
+    [serviceKey, token, version],
   );
 
   const openDays = (availability.data ?? []).filter((d) => d.open);

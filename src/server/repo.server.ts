@@ -51,7 +51,8 @@ export type NewBooking = {
   token: string;
   name: string;
   phone: string;
-  serviceId: string;
+  /** vazio quando o atendimento junta vários serviços */
+  serviceId: string | null;
   serviceName: string;
   priceCents: number;
   duration: number;

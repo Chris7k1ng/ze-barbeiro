@@ -90,23 +90,34 @@ const nameSchema = z
 const idSchema = z.string().min(1).max(80);
 const tokenSchema = z.string().min(20).max(200);
 
-export const bookingInputSchema = z.object({
-  name: nameSchema,
-  phone: phoneSchema,
-  serviceId: idSchema,
-  date: dateSchema,
-  time: timeSchema,
-});
+/** Um ou mais serviços no mesmo horário (ex.: corte + sobrancelha). */
+export const MAX_SERVICES_PER_BOOKING = 6;
+const serviceIdsSchema = z
+  .array(idSchema)
+  .min(1, "Escolha ao menos um serviço.")
+  .max(MAX_SERVICES_PER_BOOKING, `Escolha até ${MAX_SERVICES_PER_BOOKING} serviços.`);
 
-/** Informe o serviço (novo agendamento) ou o token (remarcar um agendamento existente). */
+export const bookingInputSchema = z
+  .object({
+    name: nameSchema,
+    phone: phoneSchema,
+    serviceId: idSchema.optional(),
+    serviceIds: serviceIdsSchema.optional(),
+    date: dateSchema,
+    time: timeSchema,
+  })
+  .refine((o) => o.serviceId || o.serviceIds, "Escolha ao menos um serviço.");
+
+/** Informe o(s) serviço(s) (novo agendamento) ou o token (remarcar um agendamento existente). */
 export const availabilityInputSchema = z
   .object({
     serviceId: idSchema.optional(),
+    serviceIds: serviceIdsSchema.optional(),
     token: tokenSchema.optional(),
     from: dateSchema,
     days: z.number().int().min(1).max(31),
   })
-  .refine((o) => o.serviceId || o.token, "Informe o serviço.");
+  .refine((o) => o.serviceId || o.serviceIds || o.token, "Informe o serviço.");
 
 export const tokenInputSchema = z.object({ token: tokenSchema });
 export const rescheduleInputSchema = z.object({

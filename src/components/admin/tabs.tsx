@@ -320,11 +320,11 @@ export function RemindersTab({ version }: { version: number }) {
       )}
       {list.map((b) => {
         const text = [
-          `Olá, ${b.name.split(" ")[0]}! Tudo bem? 😊`,
+          `Olá, ${b.name.split(" ")[0]}! Tudo bem?`,
           "",
           `Passando para lembrar do seu horário amanhã no Zé Filho Barbeiro:`,
-          `✂️ ${b.serviceName}`,
-          `🕐 ${b.time}`,
+          `Serviço: ${b.serviceName}`,
+          `Horário: ${b.time}`,
           "",
           `Se precisar remarcar ou cancelar, é só acessar: ${location.origin}/agendamento/${b.token}`,
           "",

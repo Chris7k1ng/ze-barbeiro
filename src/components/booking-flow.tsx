@@ -69,7 +69,7 @@ function ServicePhoto({ service }: { service: Service }) {
 
 export function BookingFlow({ services, settings }: { services: Service[]; settings: Settings }) {
   const [step, setStep] = useState(0);
-  const [serviceId, setServiceId] = useState("");
+  const [serviceIds, setServiceIds] = useState<string[]>([]);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [name, setName] = useState("");
@@ -100,10 +100,20 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
     return () => observer.disconnect();
   }, []);
 
-  const service = services.find((s) => s.id === serviceId);
+  // o cliente pode juntar vários serviços no mesmo horário (ex.: corte + sobrancelha)
+  const chosen = services.filter((s) => serviceIds.includes(s.id));
+  const chosenNames = chosen.map((s) => s.name).join(" + ");
+  const totalPrice = chosen.reduce((sum, s) => sum + s.price, 0);
+  const totalDuration = chosen.reduce((sum, s) => sum + s.duration, 0);
+
+  const toggleService = (id: string) => {
+    setServiceIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+    setDate("");
+    setTime("");
+  };
 
   const finish = async () => {
-    if (!service || !date || !time || saving) return;
+    if (!chosen.length || !date || !time || saving) return;
     if (name.trim().length < 2) return setError("Informe seu nome.");
     if (!/^[1-9]{2}9\d{8}$/.test(phone))
       return setError("Informe um WhatsApp válido com DDD e 9 dígitos.");
@@ -111,7 +121,9 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
     setSaving(true);
     setError("");
     try {
-      const result = await createBooking({ data: { name, phone, serviceId, date, time } });
+      const result = await createBooking({
+        data: { name, phone, serviceIds: chosen.map((s) => s.id), date, time },
+      });
       if (result.ok) {
         setDone(result.data);
         setStep(3);
@@ -145,7 +157,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
   const startOver = () => {
     setDone(null);
     setStep(0);
-    setServiceId("");
+    setServiceIds([]);
     setDate("");
     setTime("");
     setName("");
@@ -163,12 +175,12 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
     };
     const wa = whatsappUrl(
       [
-        "Olá, Zé Filho! Acabei de agendar pelo site. 😊",
+        "Olá, Zé Filho! Acabei de agendar pelo site.",
         "",
-        `✂️ Serviço: ${done.serviceName}`,
-        `📅 Dia: ${day}`,
-        `🕐 Horário: ${done.time}`,
-        `👤 Nome: ${done.name}`,
+        `Serviço: ${done.serviceName}`,
+        `Dia: ${day}`,
+        `Horário: ${done.time}`,
+        `Nome: ${done.name}`,
         "",
         "Qualquer mudança eu te aviso. Obrigado!",
       ].join("\n"),
@@ -357,7 +369,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
             </h2>
             <p className="text-muted-foreground text-xs mt-2">
               {step === 0
-                ? "Escolha o cuidado que combina com você."
+                ? "Escolha um ou mais serviços. Ex.: corte e sobrancelha no mesmo horário."
                 : step === 1
                   ? "Escolha o melhor dia e um horário disponível."
                   : "Só precisamos do seu nome e WhatsApp."}
@@ -369,13 +381,9 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
                   <Button
                     variant="ghost"
                     key={s.id}
-                    className={`service-option ${serviceId === s.id ? "selected" : ""}`}
-                    onClick={() => {
-                      setServiceId(s.id);
-                      setDate("");
-                      setTime("");
-                    }}
-                    aria-pressed={serviceId === s.id}
+                    className={`service-option ${serviceIds.includes(s.id) ? "selected" : ""}`}
+                    onClick={() => toggleService(s.id)}
+                    aria-pressed={serviceIds.includes(s.id)}
                   >
                     <ServicePhoto service={s} />
                     <span className="min-w-0">
@@ -399,7 +407,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
                       </span>
                     </span>
                     <span className="selection-dot">
-                      {serviceId === s.id && <Check className="size-3" />}
+                      {serviceIds.includes(s.id) && <Check className="size-3" />}
                     </span>
                   </Button>
                 ))}
@@ -413,7 +421,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
 
             {step === 1 && (
               <DateTimePicker
-                serviceId={serviceId}
+                serviceIds={serviceIds}
                 date={date}
                 time={time}
                 version={pickerVersion}
@@ -488,7 +496,9 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
               )}
               <Button
                 className="h-11 px-4 sm:px-6 ml-auto"
-                disabled={saving || (step === 0 ? !service : step === 1 ? !date || !time : false)}
+                disabled={
+                  saving || (step === 0 ? !chosen.length : step === 1 ? !date || !time : false)
+                }
                 onClick={() => (step === 2 ? finish() : setStep(step + 1))}
               >
                 {step === 2 ? (saving ? "Salvando…" : "Confirmar agendamento") : "Continuar"}
@@ -508,11 +518,11 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
             </div>
             <div className="summary-line">
               <span className="summary-label">Serviço</span>
-              <span>{service?.name ?? "A escolher"}</span>
+              <span className="text-right">{chosenNames || "A escolher"}</span>
             </div>
             <div className="summary-line">
               <span className="summary-label">Duração</span>
-              <span>{service ? `${service.duration} minutos` : "—"}</span>
+              <span>{chosen.length ? `${totalDuration} minutos` : "—"}</span>
             </div>
             <div className="summary-line">
               <span className="summary-label">Dia</span>
@@ -527,7 +537,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
             <div className="border-t border-border mt-3 pt-5 flex justify-between items-center">
               <span className="text-sm">Total</span>
               <strong className="text-primary text-xl">
-                {service ? money(service.price) : "—"}
+                {chosen.length ? money(totalPrice) : "—"}
               </strong>
             </div>
             <p className="text-[10px] text-muted-foreground mt-3">Pagamento na barbearia.</p>

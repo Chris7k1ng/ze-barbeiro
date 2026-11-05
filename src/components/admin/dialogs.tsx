@@ -64,7 +64,7 @@ export function BookingDialog({
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [serviceId, setServiceId] = useState("");
+  const [serviceIds, setServiceIds] = useState<string[]>([]);
   const [date, setDate] = useState(defaultDate);
   const [time, setTime] = useState("");
   const [error, setError] = useState("");
@@ -80,16 +80,23 @@ export function BookingDialog({
     }
   }, [open, defaultDate]);
 
+  // começa com o primeiro serviço marcado; o dono pode marcar mais de um
   useEffect(() => {
-    if (!serviceId && services[0]) setServiceId(services[0].id);
-  }, [services, serviceId]);
+    if (!serviceIds.length && services[0]) setServiceIds([services[0].id]);
+  }, [services, serviceIds]);
+
+  const toggleService = (id: string) => {
+    setServiceIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+    setTime("");
+  };
+  const chosen = services.filter((s) => serviceIds.includes(s.id));
 
   const availability = useLoad(
     () =>
-      serviceId
-        ? getAvailability({ data: { serviceId, from: date, days: 1 } })
+      serviceIds.length
+        ? getAvailability({ data: { serviceIds, from: date, days: 1 } })
         : Promise.resolve({ ok: true as const, data: [] }),
-    [serviceId, date, open],
+    [serviceIds.join(","), date, open],
   );
   const slots = availability.data?.[0]?.slots ?? [];
 
@@ -98,10 +105,11 @@ export function BookingDialog({
     setError("");
     if (name.trim().length < 2 || !/^[1-9]{2}9\d{8}$/.test(phone))
       return setError("Informe nome e WhatsApp válido com DDD.");
+    if (!serviceIds.length) return setError("Marque ao menos um serviço.");
     if (!slots.includes(time)) return setError("Escolha um horário disponível.");
     setBusy(true);
     const result = await call(
-      ownerCreateBooking({ data: { name, phone, serviceId, date, time } }),
+      ownerCreateBooking({ data: { name, phone, serviceIds, date, time } }),
       {
         success: "Agendamento salvo.",
         onError: (message) => {
@@ -139,22 +147,31 @@ export function BookingDialog({
               required
             />
           </label>
-          <label className="field-label">
-            Serviço
-            <select
-              value={serviceId}
-              onChange={(e) => {
-                setServiceId(e.target.value);
-                setTime("");
-              }}
-            >
+          <fieldset className="field-label">
+            <legend className="mb-2">Serviços (marque um ou mais)</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
               {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} · {money(s.price)}
-                </option>
+                <label
+                  key={s.id}
+                  className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-xs ${serviceIds.includes(s.id) ? "border-primary" : "border-border"}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={serviceIds.includes(s.id)}
+                    onChange={() => toggleService(s.id)}
+                  />
+                  <span className="min-w-0 flex-1 truncate">{s.name}</span>
+                  <span className="text-muted-foreground">{money(s.price)}</span>
+                </label>
               ))}
-            </select>
-          </label>
+            </div>
+            {chosen.length > 1 && (
+              <span className="text-[11px] text-muted-foreground">
+                Total: {money(chosen.reduce((sum, s) => sum + s.price, 0))} ·{" "}
+                {chosen.reduce((sum, s) => sum + s.duration, 0)} min
+              </span>
+            )}
+          </fieldset>
           <DayField
             value={date}
             onChange={(d) => {
