@@ -31,6 +31,7 @@ import {
   ownerSettings,
 } from "@/lib/api.functions";
 import { cap, formatPhone } from "@/lib/format";
+import { servicePhoto } from "@/lib/service-photos";
 import {
   addDays,
   dayLabel,
@@ -434,34 +435,53 @@ export function ServicesTab({
       {services.error && !services.data && (
         <Problem message={services.error} retry={services.reload} />
       )}
-      {(services.data ?? []).map((s) => (
-        <div className="agenda-row" key={s.id}>
-          <Scissors className="text-primary" />
-          <div className="min-w-0">
-            <strong className="text-sm">{s.name}</strong>
-            <p className="text-xs text-muted-foreground mt-2">
-              {money(s.price)} · {s.duration} minutos
-            </p>
+      <p className="text-xs text-muted-foreground">
+        Serviços <strong>ativos</strong> aparecem para o cliente agendar. Os{" "}
+        <strong>escondidos</strong> ficam guardados, mas o cliente não vê.
+      </p>
+      {(services.data ?? []).map((s) => {
+        const photo = servicePhoto(s);
+        return (
+          <div className={`agenda-row ${s.active ? "" : "opacity-60"}`} key={s.id}>
+            <span className="service-photo !w-full !h-[48px] service-photo-fallback">
+              {photo ? (
+                <img
+                  src={photo}
+                  alt=""
+                  loading="lazy"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              ) : (
+                <Scissors />
+              )}
+            </span>
+            <div className="min-w-0">
+              <strong className="text-sm">{s.name}</strong>
+              <p className="text-xs text-muted-foreground mt-2">
+                {money(s.price)} · {s.duration} minutos
+              </p>
+            </div>
+            <div className="agenda-actions flex gap-2">
+              <Button
+                variant={s.active ? "secondary" : "outline"}
+                size="sm"
+                title={s.active ? "Clique para esconder do site" : "Clique para mostrar no site"}
+                onClick={() => toggle(s)}
+              >
+                {s.active ? "Ativo" : "Escondido"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Editar ${s.name}`}
+                onClick={() => onEdit(s)}
+              >
+                <Pencil />
+              </Button>
+            </div>
           </div>
-          <div className="agenda-actions flex gap-2">
-            <Button
-              variant={s.active ? "secondary" : "outline"}
-              size="sm"
-              onClick={() => toggle(s)}
-            >
-              {s.active ? "Ativo" : "Inativo"}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Editar ${s.name}`}
-              onClick={() => onEdit(s)}
-            >
-              <Pencil />
-            </Button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </section>
   );
 }

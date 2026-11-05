@@ -1,6 +1,13 @@
-Coloque aqui as fotos dos serviços (JPG ou PNG, de preferência com largura de até 800 px).
+Fotos dos serviços.
 
-Depois, no painel (/admin > Serviços > lápis de editar), no campo "Foto", escreva o caminho do arquivo.
-Exemplo: se o arquivo for public/servicos/corte.jpg, escreva:  /servicos/corte.jpg
+O site já traz 5 fotos prontas aqui: corte, barba, combo (corte + barba), sobrancelha e tratamento.
+Elas são ilustrativas. Se um serviço não tiver foto própria, o site escolhe uma pelo nome dele.
 
-Use apenas fotos suas ou que você tenha autorização para usar. Serviços sem foto mostram um ícone de tesoura.
+Para escolher outra foto de um serviço: /admin > Serviços > lápis de editar > toque na foto desejada.
+
+Para usar uma foto sua (JPG ou PNG, de preferência com até 800 px de largura):
+1. Coloque o arquivo nesta pasta (public/servicos).
+2. No lápis de editar do serviço, abra "Usar outra foto (avançado)" e escreva o caminho.
+   Exemplo: se o arquivo for public/servicos/corte-novo.jpg, escreva /servicos/corte-novo.jpg
+
+Use apenas fotos suas ou que você tenha autorização para usar.

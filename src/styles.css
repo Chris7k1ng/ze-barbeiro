@@ -1041,8 +1041,15 @@
 }
 
 /* Serviço sem foto: mostra um ícone centralizado no lugar */
-.service-photo-fallback { display: grid; place-items: center; color: var(--primary); }
-.service-photo-fallback svg { width: 30px; height: 30px; }
+.service-photo-fallback {
+  display: grid;
+  place-items: center;
+  color: var(--primary);
+}
+.service-photo-fallback svg {
+  width: 30px;
+  height: 30px;
+}
 
 /* Texto nunca fica sob a foto do barbeiro.
    Desktop: a foto só ocupa o espaço que sobra à direita da coluna de texto.
@@ -1057,11 +1064,7 @@
 }
 .hero-portrait-wrap {
   right: -40px;
-  width: clamp(
-    420px,
-    calc(100vw + 40px - (max(0px, (100vw - 1250px) / 2) + 616px)),
-    900px
-  );
+  width: clamp(420px, calc(100vw + 40px - (max(0px, (100vw - 1250px) / 2) + 616px)), 900px);
 }
 @media (max-width: 1000px) {
   .hero {

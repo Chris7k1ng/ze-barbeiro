@@ -23,6 +23,7 @@ import barberPortrait from "@/assets/foto.png";
 import hero from "@/assets/barbershop.jpg";
 import { downloadIcs, googleCalendarUrl } from "@/lib/calendar-links";
 import { cap, formatPhone, phoneDigits } from "@/lib/format";
+import { defaultServicePhoto, servicePhoto } from "@/lib/service-photos";
 import { mapsUrl, shopInfo, whatsappUrl } from "@/lib/shop-info";
 import { dayLabel, money, type MyBooking, type Service, type Settings } from "@/lib/shop";
 
@@ -44,8 +45,15 @@ function openDaysText(closedDays: number[]) {
 const hourText = (value: string) => value.replace(":00", "h").replace(":", "h");
 
 function ServicePhoto({ service }: { service: Service }) {
-  const [failed, setFailed] = useState(false);
-  if (!service.photo || failed) {
+  // se a foto cadastrada não abrir, tenta a sugerida pelo nome; se também falhar, mostra o ícone
+  const [failed, setFailed] = useState(0);
+  const src =
+    failed === 0
+      ? servicePhoto(service)
+      : failed === 1
+        ? defaultServicePhoto(service.name)
+        : undefined;
+  if (!src) {
     return (
       <span className="service-photo service-photo-fallback" aria-hidden="true">
         <Scissors />
@@ -54,7 +62,7 @@ function ServicePhoto({ service }: { service: Service }) {
   }
   return (
     <span className="service-photo">
-      <img src={service.photo} alt={service.name} loading="lazy" onError={() => setFailed(true)} />
+      <img src={src} alt={service.name} loading="lazy" onError={() => setFailed((n) => n + 1)} />
     </span>
   );
 }

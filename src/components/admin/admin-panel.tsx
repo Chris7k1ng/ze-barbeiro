@@ -33,6 +33,16 @@ const navigation = [
 ] as const;
 
 type Tab = (typeof navigation)[number]["id"];
+
+// Uma frase por aba, explicando para que ela serve.
+const tabHelp: Record<Tab, string> = {
+  agenda: 'Os clientes marcados, dia a dia. Use "Agendar" para marcar um cliente você mesmo.',
+  lembretes: 'Quem tem horário amanhã. Toque em "Enviar lembrete" para avisar pelo WhatsApp.',
+  bloqueios: "Bloqueie horários em que você não vai atender (compromisso, folga, saída).",
+  servicos: "Os serviços que o cliente vê no site: nome, preço, duração e foto.",
+  configuracoes: "Horário de funcionamento, almoço, dias de folga e intervalo entre clientes.",
+  relatorio: "Quanto você faturou e quantos atendimentos fez no período.",
+};
 type Modal =
   { type: "booking" } | { type: "block" } | { type: "service"; service: Service | null } | null;
 
@@ -77,9 +87,9 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
           </nav>
           <div className="hidden md:block mt-16">
             <p className="text-[10px] text-muted-foreground leading-relaxed">
-              Painel administrativo
+              Só você acessa este painel.
               <br />
-              Dados salvos no Neon
+              Tudo é salvo automaticamente.
             </p>
             <Button
               variant="ghost"
@@ -100,11 +110,7 @@ export function AdminPanel({ onLogout }: { onLogout: () => void }) {
               <h1 className="section-title mt-2">
                 {tab === "agenda" ? "Sua agenda" : navigation.find((n) => n.id === tab)?.label}
               </h1>
-              <p className="text-xs text-muted-foreground mt-2">
-                {tab === "agenda"
-                  ? "Cada horário, um novo estilo."
-                  : "Tudo em dia para atender bem."}
-              </p>
+              <p className="text-xs text-muted-foreground mt-2 max-w-xl">{tabHelp[tab]}</p>
             </div>
             <div className="flex gap-2 items-center shrink-0">
               {tab === "agenda" && (

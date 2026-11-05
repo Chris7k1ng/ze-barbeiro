@@ -15,6 +15,7 @@ import {
   ownerSaveService,
 } from "@/lib/api.functions";
 import { formatPhone, phoneDigits } from "@/lib/format";
+import { servicePhotoOptions } from "@/lib/service-photos";
 import { dayLabel, money, todayKey, type Service } from "@/lib/shop";
 import { useLoad } from "@/lib/use-load";
 
@@ -391,18 +392,48 @@ export function ServiceDialog({
               />
             </label>
           </div>
-          <label className="field-label">
-            Foto (opcional)
-            <Input
-              value={photo}
-              onChange={(e) => setPhoto(e.target.value)}
-              placeholder="/servicos/corte.jpg  ou  https://…"
-            />
+          <div className="field-label">
+            Foto do serviço
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+              <button
+                type="button"
+                onClick={() => setPhoto("")}
+                aria-pressed={!photo}
+                className={`rounded-md border p-1 text-[10px] leading-tight ${!photo ? "border-primary text-primary" : "border-border text-muted-foreground"}`}
+              >
+                <span className="grid h-12 place-items-center">Automática</span>
+              </button>
+              {servicePhotoOptions.map((o) => (
+                <button
+                  type="button"
+                  key={o.src}
+                  onClick={() => setPhoto(o.src)}
+                  aria-pressed={photo === o.src}
+                  title={o.label}
+                  className={`rounded-md border p-1 text-[10px] leading-tight ${photo === o.src ? "border-primary text-primary" : "border-border text-muted-foreground"}`}
+                >
+                  <img src={o.src} alt={o.label} className="h-12 w-full rounded object-cover" />
+                  <span className="mt-1 block truncate">{o.label}</span>
+                </button>
+              ))}
+            </div>
             <span className="text-[11px] text-muted-foreground">
-              Use uma foto sua: coloque o arquivo na pasta public/servicos e escreva o caminho
-              acima.
+              Toque em uma foto para escolher. "Automática" usa a foto que combina com o nome do
+              serviço.
             </span>
-          </label>
+            <details className="text-[11px] text-muted-foreground">
+              <summary className="cursor-pointer">Usar outra foto (avançado)</summary>
+              <Input
+                className="mt-2"
+                value={photo}
+                onChange={(e) => setPhoto(e.target.value)}
+                placeholder="/servicos/minha-foto.jpg  ou  https://…"
+              />
+              <p className="mt-1">
+                Coloque o arquivo na pasta public/servicos do projeto e escreva o caminho acima.
+              </p>
+            </details>
+          </div>
           {error && (
             <p role="alert" className="text-destructive text-sm">
               {error}
