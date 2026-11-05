@@ -1119,3 +1119,67 @@
     display: none;
   }
 }
+
+/* Texto do topo bem legível sobre a foto. */
+.hero-text {
+  color: var(--foreground);
+  font-size: 18px;
+  font-weight: 500;
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    0 2px 18px rgba(0, 0, 0, 0.8);
+}
+.hero::after {
+  background: linear-gradient(
+    90deg,
+    rgba(3, 4, 4, 0.9) 0%,
+    rgba(3, 4, 4, 0.78) 38%,
+    rgba(3, 4, 4, 0.3) 62%,
+    rgba(3, 4, 4, 0.04) 100%
+  );
+}
+@media (max-width: 1000px) {
+  .hero-text {
+    font-size: 16px;
+  }
+  .hero::after {
+    background: linear-gradient(
+      180deg,
+      rgba(3, 4, 4, 0.9) 0%,
+      rgba(3, 4, 4, 0.82) 55%,
+      rgba(3, 4, 4, 0.3) 100%
+    );
+  }
+}
+
+/* Combos em destaque na lista de serviços. */
+.service-option.combo {
+  border-color: color-mix(in oklch, var(--primary) 60%, var(--border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--primary) 16%, var(--card)),
+    var(--card) 70%
+  );
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 30%, transparent);
+}
+.service-option.combo.selected {
+  border-color: var(--primary);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--primary) 26%, var(--card)),
+    color-mix(in oklch, var(--primary) 8%, var(--card)) 80%
+  );
+}
+.combo-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}

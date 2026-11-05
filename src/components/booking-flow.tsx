@@ -100,6 +100,10 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
     return () => observer.disconnect();
   }, []);
 
+  // combos (nome com "+") primeiro; dentro de cada grupo vale a ordem do painel
+  const isCombo = (s: Service) => s.name.includes("+");
+  const orderedServices = [...services].sort((a, b) => Number(isCombo(b)) - Number(isCombo(a)));
+
   // o cliente pode juntar vários serviços no mesmo horário (ex.: corte + sobrancelha)
   const chosen = services.filter((s) => serviceIds.includes(s.id));
   const chosenNames = chosen.map((s) => s.name).join(" + ");
@@ -307,7 +311,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
             <br />
             <span>Seu próximo corte.</span>
           </h1>
-          <p className="text-base text-foreground/80 mt-6 max-w-[510px] leading-relaxed">
+          <p className="hero-text mt-6 max-w-[510px] leading-relaxed">
             Mais que um corte, é autoestima.
             <br />
             Aqui você encontra qualidade, bom atendimento e o estilo que combina com você.
@@ -387,11 +391,11 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
 
             {step === 0 && (
               <div className="service-list">
-                {services.map((s) => (
+                {orderedServices.map((s) => (
                   <Button
                     variant="ghost"
                     key={s.id}
-                    className={`service-option ${serviceIds.includes(s.id) ? "selected" : ""}`}
+                    className={`service-option ${isCombo(s) ? "combo" : ""} ${serviceIds.includes(s.id) ? "selected" : ""}`}
                     onClick={() => toggleService(s.id)}
                     aria-pressed={serviceIds.includes(s.id)}
                   >
@@ -399,11 +403,7 @@ export function BookingFlow({ services, settings }: { services: Service[]; setti
                     <span className="min-w-0">
                       <span className="text-sm font-semibold block">
                         {s.name}
-                        {s.name.includes("+") && (
-                          <span className="text-[8px] text-primary border border-primary/30 ml-2 px-1 py-0.5 align-middle">
-                            COMBO
-                          </span>
-                        )}
+                        {s.name.includes("+") && <span className="combo-badge">Combo</span>}
                       </span>
                       <span className="text-[11px] text-muted-foreground font-normal block mt-1.5 leading-relaxed">
                         {s.description}
