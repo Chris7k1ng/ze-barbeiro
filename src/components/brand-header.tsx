@@ -26,7 +26,7 @@ export function BrandHeader() {
           </div>
         </a>
         <nav
-          className="brand-nav hidden md:flex items-center gap-8"
+          className="brand-nav hidden lg:flex items-center gap-8"
           aria-label="Navegação principal"
         >
           <a className="brand-nav-link active" href="/#inicio">
@@ -52,7 +52,7 @@ export function BrandHeader() {
         {/* No celular o menu completo não cabe: fica só o atalho mais importante */}
         <Link
           to="/meu-agendamento"
-          className="md:hidden shrink-0 rounded-full border border-border px-3 py-2 text-xs text-primary"
+          className="lg:hidden shrink-0 rounded-full border border-border px-3 py-2 text-xs text-primary"
         >
           Meu horário
         </Link>
